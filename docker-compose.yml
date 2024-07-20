@@ -1,8 +1,7 @@
 services:
   go:
-    container_name: go
-    image: golang:1.23rc2-alpine
-    entrypoint: ["go"]
-    working_dir: /velocity-control
+    image: golang:latest
+    working_dir: /app
     volumes:
-      - ./:/velocity-control
+      - ./:/app/
+    entrypoint: ['go']
