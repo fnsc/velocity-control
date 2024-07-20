@@ -1,7 +1,7 @@
 services:
   go:
     image: golang:latest
-    working_dir: /app
+    working_dir: /var/www/html
     volumes:
-      - ./:/app/
+      - ./:/var/www/html
     entrypoint: ['go']
