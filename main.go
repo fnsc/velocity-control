@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/fnsc/velocity-control/handlers"
 	"github.com/fnsc/velocity-control/loader"
 )
 
@@ -20,6 +21,13 @@ func main() {
 		panic(err)
 	}
 	defer outputFile.Close()
+
+	dailyLimitHandler := handlers.NewDailyLimitHandler()
+	weeklyLimitHandler := handlers.NewWeeklyLimitHandler()
+	dailyLoadCountHandler := handlers.NewDailyLoadCountHandler()
+
+	dailyLoadCountHandler.SetNext(&weeklyLimitHandler.BaseHandler)
+	weeklyLimitHandler.SetNext(&dailyLimitHandler.BaseHandler)
 
 	scanner := bufio.NewScanner(inputFile)
 	for scanner.Scan() {
