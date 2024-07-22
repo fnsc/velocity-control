@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 
@@ -22,12 +23,7 @@ func main() {
 	}
 	defer outputFile.Close()
 
-	dailyLimitHandler := handlers.NewDailyLimitHandler()
-	weeklyLimitHandler := handlers.NewWeeklyLimitHandler()
-	dailyLoadCountHandler := handlers.NewDailyLoadCountHandler()
-
-	dailyLoadCountHandler.SetNext(&weeklyLimitHandler.BaseHandler)
-	weeklyLimitHandler.SetNext(&dailyLimitHandler.BaseHandler)
+	dailyLoadCountHandler := setHandlers()
 
 	scanner := bufio.NewScanner(inputFile)
 	for scanner.Scan() {
@@ -38,10 +34,29 @@ func main() {
 			continue
 		}
 
-		fmt.Println(request)
+		response := dailyLoadCountHandler.Handle(request)
+		reponseJson, err := json.Marshal(response)
+		if err != nil {
+			fmt.Fprintf(outputFile, "error generating response for line: %s", line)
+
+			continue
+		}
+
+		outputFile.WriteString(string(reponseJson) + "\n")
 	}
 
 	if err := scanner.Err(); err != nil {
 		panic(err)
 	}
+}
+
+func setHandlers() *handlers.DailyLoadCountHandler {
+	dailyLimitHandler := handlers.NewDailyLimitHandler()
+	weeklyLimitHandler := handlers.NewWeeklyLimitHandler()
+	dailyLoadCountHandler := handlers.NewDailyLoadCountHandler()
+
+	dailyLoadCountHandler.SetNext(&weeklyLimitHandler.BaseHandler)
+	weeklyLimitHandler.SetNext(&dailyLimitHandler.BaseHandler)
+
+	return dailyLoadCountHandler
 }
