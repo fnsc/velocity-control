@@ -1,0 +1,7 @@
+services:
+  go:
+    image: golang:latest
+    working_dir: /var/www/html
+    volumes:
+      - ./:/var/www/html
+    entrypoint: ['go']
