@@ -2,47 +2,38 @@ package main
 
 import (
 	"bufio"
-	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 
-	"github.com/fnsc/velocity-control/domain"
+	"github.com/fnsc/velocity-control/loader"
 )
 
 func main() {
-	file, err := os.Open("input.txt")
-
+	inputFile, err := os.Open("input.txt")
 	if err != nil {
-		log.Fatalf("Error opening file: %s", err)
-
-		return
+		panic(err)
 	}
+	defer inputFile.Close()
 
-	defer file.Close()
-	var requests []domain.Request
+	outputFile, err := os.Create("output.txt")
+	if err != nil {
+		panic(err)
+	}
+	defer outputFile.Close()
 
-	scanner := bufio.NewScanner(file)
-
+	scanner := bufio.NewScanner(inputFile)
 	for scanner.Scan() {
-		var request domain.Request
-
-		err := json.Unmarshal(scanner.Bytes(), &request)
-
+		line := scanner.Text()
+		request, err := loader.ParseRequest(line)
 		if err != nil {
-			fmt.Println("error while deserializing your json:", err)
-
+			fmt.Fprintf(outputFile, "Error parsing line: %s\n", line)
 			continue
 		}
 
-		requests = append(requests, request)
+		fmt.Println(request)
 	}
 
 	if err := scanner.Err(); err != nil {
-		fmt.Println("error reading the file:", err)
-	}
-
-	for _, request := range requests {
-		fmt.Println("%+v\n", request)
+		panic(err)
 	}
 }
